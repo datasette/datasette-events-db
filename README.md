@@ -13,6 +13,7 @@ Install this plugin in the same environment as Datasette.
 ```bash
 datasette install datasette-events-db
 ```
+This plugin depends on [Datasette 1.0a8](https://docs.datasette.io/en/latest/changelog.html#a8-2024-02-07) or higher.
 ## Usage
 
 Once installed, all [Datasette events](https://docs.datasette.io/en/latest/events.html) will be logged to a table called `datasette_events`. This table will be created in the `_internal` database, but can be moved to another database using the following plugin configuration option:
