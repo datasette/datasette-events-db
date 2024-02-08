@@ -25,6 +25,26 @@ plugins:
 
 The table will be created when Datasette starts up, if it does not already exist.
 
+## Table schema
+
+```sql
+create table if not exists datasette_events (
+    id integer primary key,
+    event text,
+    created text,
+    actor_id text,
+    database_name text,
+    table_name text,
+    properties text -- JSON other properties
+)
+```
+- `event` is the text name of the event, for example `create-table`
+- `created` is an ISO formatted UTC timestamp
+- `actor_id` will be populated with the ID of the responsible actor, or `null` if not available
+- `database_name` will be the `database` property recorded by the event, if present
+- `table_name` will be the `table` property recorded by the event, if present
+- `properties` will be a JSON object containing any other properties recorded by the event
+
 ## Development
 
 To set up this plugin locally, first checkout the code. Then create a new virtual environment:
