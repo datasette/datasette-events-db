@@ -1,11 +1,71 @@
 from datasette.app import Datasette
+import json
 import pytest
 
 
 @pytest.mark.asyncio
-async def test_plugin_is_installed():
-    datasette = Datasette(memory=True)
-    response = await datasette.client.get("/-/plugins.json")
+@pytest.mark.parametrize("configured_database", (None, "_internal", "demo"))
+async def test_plugin_is_installed(configured_database):
+    config = {
+        "databases": {"_internal": {"allow": True}},
+        "permissions": {"create-table": True},
+    }
+    if configured_database:
+        config["plugins"] = {"datasette-events-db": {"database": configured_database}}
+
+    expected_database = configured_database or "_internal"
+    datasette = Datasette(
+        memory=True,
+        config=config,
+    )
+    db = datasette.add_memory_database("demo")
+    await datasette.invoke_startup()
+    # Drop table if it exists
+    await db.execute_write("drop table if exists new_table")
+    # Test table was created and starts empty
+    response = await datasette.client.get(
+        f"/{expected_database}/datasette_events.json?_extra=columns"
+    )
     assert response.status_code == 200
-    installed_plugins = {p["name"] for p in response.json()}
-    assert "datasette-events-db" in installed_plugins
+    assert response.json() == {
+        "ok": True,
+        "next": None,
+        "columns": [
+            "id",
+            "event",
+            "created",
+            "actor_id",
+            "database_name",
+            "table_name",
+            "properties",
+        ],
+        "rows": [],
+        "truncated": False,
+    }
+    # Now create a table via the Datasette API
+    await datasette.client.post(
+        "/demo/-/create",
+        json={
+            "table": "new_table",
+            "columns": [
+                {"name": "id", "type": "integer"},
+                {"name": "name", "type": "text"},
+            ],
+            "pk": "id",
+        },
+    )
+    # Should have recorded an event
+    response2 = await datasette.client.get(
+        f"/{expected_database}/datasette_events.json"
+    )
+    assert response2.status_code == 200
+    rows = response2.json()["rows"]
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["event"] == "create-table"
+    assert isinstance(row["created"], str)
+    assert row["actor_id"] is None
+    assert row["database_name"] == "demo"
+    assert row["table_name"] == "new_table"
+    props = json.loads(row["properties"])
+    assert "schema" in props

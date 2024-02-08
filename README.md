@@ -15,7 +15,15 @@ datasette install datasette-events-db
 ```
 ## Usage
 
-Usage instructions go here.
+Once installed, all [Datasette events](https://docs.datasette.io/en/latest/events.html) will be logged to a table called `datasette_events`. This table will be created in the `_internal` database, but can be moved to another database using the following plugin configuration option:
+
+```yaml
+plugins:
+  datasette-events-db:
+    database: my_database
+```
+
+The table will be created when Datasette starts up, if it does not already exist.
 
 ## Development
 
