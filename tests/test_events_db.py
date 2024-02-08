@@ -5,7 +5,7 @@ import pytest
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("configured_database", (None, "_internal", "demo"))
-async def test_plugin_is_installed(configured_database):
+async def test_log_events_to_db(configured_database):
     config = {
         "databases": {"_internal": {"allow": True}},
         "permissions": {"create-table": True},
