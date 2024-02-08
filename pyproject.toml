@@ -15,10 +15,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/simonw/datasette-events-db"
-Changelog = "https://github.com/simonw/datasette-events-db/releases"
-Issues = "https://github.com/simonw/datasette-events-db/issues"
-CI = "https://github.com/simonw/datasette-events-db/actions"
+Homepage = "https://github.com/datasette/datasette-events-db"
+Changelog = "https://github.com/datasette/datasette-events-db/releases"
+Issues = "https://github.com/datasette/datasette-events-db/issues"
+CI = "https://github.com/datasette/datasette-events-db/actions"
 
 [project.entry-points.datasette]
 events_db = "datasette_events_db"
