@@ -18,7 +18,10 @@ create table if not exists datasette_events (
 def startup(datasette):
     async def inner():
         database = get_database(datasette)
-        db = datasette.get_database(database)
+        if database == "_internal":
+            db = datasette.get_internal_database()
+        else:
+            db = datasette.get_database(database)
         await db.execute_write(CREATE_TABLE_SQL)
 
     return inner

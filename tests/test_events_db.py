@@ -22,6 +22,12 @@ async def test_plugin_is_installed(configured_database):
     await datasette.invoke_startup()
     # Drop table if it exists
     await db.execute_write("drop table if exists new_table")
+
+    # Ensure we can see _internal if necessary
+    if expected_database == "_internal":
+        internal_db = datasette.get_internal_database()
+        datasette.add_database(internal_db, name="_internal", route="_internal")
+
     # Test table was created and starts empty
     response = await datasette.client.get(
         f"/{expected_database}/datasette_events.json?_extra=columns"
