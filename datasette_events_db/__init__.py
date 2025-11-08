@@ -17,11 +17,7 @@ create table if not exists datasette_events (
 @hookimpl
 def startup(datasette):
     async def inner():
-        database = get_database(datasette)
-        if database == "_internal":
-            db = datasette.get_internal_database()
-        else:
-            db = datasette.get_database(database)
+        db = get_database(datasette)
         await db.execute_write(CREATE_TABLE_SQL)
 
     return inner
@@ -30,8 +26,7 @@ def startup(datasette):
 @hookimpl
 def track_event(datasette, event):
     async def inner():
-        database = get_database(datasette)
-        db = datasette.get_database(database)
+        db = get_database(datasette)
         properties = event.properties()
         # pop off the database and table properties if they exist
         database_name = properties.pop("database", None)
@@ -72,4 +67,8 @@ def track_event(datasette, event):
 
 def get_database(datasette):
     config = datasette.plugin_config("datasette-events-db") or {}
-    return config.get("database") or "_internal"
+    db_name = config.get("database")
+    if not db_name:
+        return datasette.get_internal_database()
+    else:
+        return datasette.get_database(db_name)
